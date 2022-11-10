@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqldb://' + mysql_user + ':' + mysql_password + '@' + mysql_hostname + ':3306/patient_portal'
 # function to keep track of database changes within python environment and then save it to special file.
-# app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 # random characters/numbers for connection that will be forming to mysql. 
 app.secret_key = 'sdf#$#dfjkhdf0SDJH0df9fd98343fdfu34rf'
@@ -32,7 +32,7 @@ class Patients(db.Model):
     mrn = db.Column(db.String(255))
     first_name = db.Column(db.String(255))
     last_name = db.Column(db.String(255))
-    zip_code = db.Column(db.String(255))
+    zip_code = db.Column(db.String(255), nullable=True)
     gender = db.Column(db.String(255), nullable=True)
     dob = db.Column(db.String(255))
     contact_mobile = db.Column(db.String(255), nullable=True)
@@ -188,6 +188,7 @@ def insert(): # note this function needs to match name in html form action
 
 
 
+
 # this endpoint is for updating our patients basic info 
 @app.route('/update', methods = ['GET', 'POST'])
 def update(): # note this function needs to match name in html form action
@@ -267,7 +268,20 @@ def update_medications(): # note this function needs to match name in html form 
 
 
 
-
+@app.route('/insert_conditions', methods = ['POST'])
+def insert_conditions(): # note this function needs to match name in html form action 
+    if request.method == 'POST':
+        mrn = request.form['mrn']
+        id = request.form['id']
+        icd10_code = request.form['icd10_code']
+        new_patient_condition = Conditions_patient( icd10_code)
+        db.session.add(new_patient_condition)
+        db.session.commit()
+        flash("Patient Inserted Successfully")
+        return redirect(url_for('get_gui_patients'))
+    else:
+        flash("Something went wrong")
+        return redirect(url_for('get_gui_patients'))
 
 
 
